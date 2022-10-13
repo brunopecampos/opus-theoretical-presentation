@@ -1,0 +1,2 @@
+FROM dockerfile_basico
+ENTRYPOINT ["ls", "/"]

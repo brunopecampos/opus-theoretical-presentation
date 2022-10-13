@@ -1,0 +1,6 @@
+FROM ubuntu:latest as first_target
+RUN touch /a.txt
+ENTRYPOINT ["ls", "/"]
+
+FROM first_target  as second_target
+RUN touch /b.txt

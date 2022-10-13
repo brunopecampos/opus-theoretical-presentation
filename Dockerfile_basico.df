@@ -1,0 +1,17 @@
+FROM ubuntu:latest
+ONBUILD RUN touch /a.txt
+# Set the author field for the generated image.
+LABEL AUTHOR=bruno_campos
+LABEL ORG=opus_software
+# Run some commands.
+RUN apt-get update && apt-get install -yq curl
+RUN apt-get clean
+# Set working directory and environment variables.
+WORKDIR /root
+ENV VAR1 version1
+# Add a shell script to the generated image.
+COPY run.sh /root/run.sh
+RUN chmod +x run.sh
+# Set entry point and argments for the generated image.
+ENTRYPOINT ["sh", "./run.sh"]
+CMD ["Command Executado"]
