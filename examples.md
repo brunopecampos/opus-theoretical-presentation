@@ -30,24 +30,21 @@ docker pull quay.io/dockerinaction/ch4_hello_registry:latest
 
 ### Exec, Entrypoints, Variáveis de Ambiente e Tolerância à falha
 
-docker run -rm --name word wordpress\
-docker exer -it word /bin/sh\
-docker rm -f word\
-docker run --name word --entrypoint echo wordpress "Hello World"\
-docker rm -f word\
-docker run --name word --env MY_VAR=opus_software -it wordpress /bin/sh\
+docker run --rm --name word --env MY_VAR=opus_software wordpress\
+docker exec -it word /bin/sh\
 echo $MY_VAR\
-docker run --name word --restart always -it wordpress /bin/sh\
 exit\
-docker ps
+docker run --rm --name word --entrypoint echo wordpress "Hello World"\
+docker run --name word --restart always -it wordpress echo "opus"
+docker logs word
 
 ### logs e inspect
 
-docker run --name word wordpress\
+docker run --name word -d wordpress\
 docker logs word\
-docker rm -f word\
-docker run --name word --label AUTHOR=bruno word wordpress\
-docker inspect word\
+clearkd\
+docker run --name word --label AUTHOR=bruno -d wordpress\
+docker inspect word | less\
 docker inspect word | grep AUTHOR
 
 ## Volumes e Armazenamento
@@ -70,8 +67,7 @@ cd home \
 touch opus.txt\
 exit\
 docker restart my\
-cd home\
-ls
+docker exec my ls /home
 
 ### Volumes
 
@@ -79,7 +75,7 @@ docker volume create my-volume\
 docker volume ls\
 docker run --mount type=volume,src=my-volume,dst=/home --name mysql1 -it mysql /bin/sh\
 cd /home\
-\#Abre outro terminal
+\#Abre outro terminal\
 docker run --mount type=volume,src=my-volume,dst=/home --name mysql2 -it mysql /bin/sh\
 cd /home\
 touch opus.txt\
@@ -102,12 +98,10 @@ docker volume ls
 ### Redes Host e Nobody
 
 docker network ls\
-docker run --name nettools --network none -d --rm praqma/network-multitool\
-docker exec -it nettools /bin/sh\
+docker run --name nettools --network none -it --rm praqma/network-multitool /bin/sh\
 ifconfig\
 exit\
-docker run --name nettools --network host -d --rm praqma/network-multitool\
-docker exec -it nettools /bin/sh\
+docker run --name nettools --network host -it --rm praqma/network-multitool /bin/sh\
 ifconfig\
 exit\
 \#Abre outro terminal\
@@ -136,8 +130,7 @@ nc -v nettools1 12000
 
 ### Encaminhamento de Porta
 
-docker run --name nettools -p 9000:9000/tcp -d --rm praqma/network-multitool\
-docker exec -it nettools /bin/sh\
+docker run --name nettools -p 9000:9000/tcp -it --rm praqma/network-multitool /bin/sh \
 \# Abre outro terminal\
 sudo wireshark\
 \# escolher any e tcp.port = 9000\
@@ -150,10 +143,9 @@ nc -v localhost 9000
 
 ### Memória
 
-docker run -it --name forkbomb --memory=2G python /bin/sh\
+docker run -it --rm --name forkbomb --memory=2G python /bin/sh\
 \# Segundo terminal \
 docker cp fork-bomb.py forkbomb:/\
-\# Terceiro terminal \
 docker stats forkbomb \
 \# Primeiro terminal \
 ls \
@@ -161,8 +153,8 @@ python fork-bomb.py
 
 ### CPU
 
-docker run --name cpu1 --cpu-shares 1024 -d progrium/stress --cpu 12\
-docker run --name cpu2 --cpu-shares 512 -d progrium/stress --cpu 12\
+docker run --name cpu1 --cpu-shares 1024 -d --rm progrium/stress --cpu 12\
+docker run --name cpu2 --cpu-shares 512 -d --rm progrium/stress --cpu 12\
 docker stats cpu1\
 \# Segundo terminal\
 docker stats cpu2\
@@ -171,7 +163,7 @@ docker rm -f cpu1 cpu2
 ### Driver
 
 \# Desligar a câmera da apresentação\
-docker run --name=webcam -d -p 8080:8080 -p 8082:8082 --device /dev/video0:/dev/video0 romankspb/webcam \
+docker run --name=webcam -d --rm -p 8080:8080 -p 8082:8082 --device /dev/video0:/dev/video0 romankspb/webcam \
 \# Ligar câmera de novo
 
 ### Memória compartilhada
@@ -179,14 +171,14 @@ docker run --name=webcam -d -p 8080:8080 -p 8082:8082 --device /dev/video0:/dev/
 \# Mostrar códido em c \
 vim ipc.c\
 \# Rodar sem ipc no segundo container\
-docker container run -d --name producer --ipc shareable dockerinaction/ch6_ipc -producer\
-docker container run -d --name consumer --ipc container:producer dockerinaction/ch6_ipc -consumer\
+docker container run -d --rm --name producer --ipc shareable dockerinaction/ch6_ipc -producer\
+docker container run -d --rm --name consumer --ipc container:producer dockerinaction/ch6_ipc -consumer\
 docker logs producer\
-docker logs consumerc\
+docker logs consumer
 
 ### Operações do Kernel
 
-docker run --name word -it --cap-drop chown wordpress /bin/sh\
+docker run --name word -it --rm --cap-drop chown wordpress /bin/sh\
 touch a.txt\
 chown nobody a.txt
 
