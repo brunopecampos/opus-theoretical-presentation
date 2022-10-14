@@ -1,4 +1,4 @@
-# Examplos da Apresentação Teórica de Docker
+# Projeto da apresentação teórico de Docker
 
 ### Bruno Campos
 
@@ -7,6 +7,8 @@
 ### Opus Software
 
 ### Slides utilizados podem ser encontrados em https://docs.google.com/presentation/d/1uCOvtNze2oXrbL97uKUwGO1dMEWF5_-6edjIvSvkCPk/edit#slide=id.g16939117430_0_0
+
+# Script dos exemplos usados
 
 ## Tópicos básicos sobre contêineres
 
