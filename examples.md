@@ -10,43 +10,22 @@
 
 ### Pull vs Create vs Run
 
-docker pull wordpress;\
+docker pull hello-world;\
 docker image ls;\
 docker container ls;\
-docker image rm wordpress;\
-docker create wordpress;\
+docker create hello-world;\
 docker container ls -a;\
-docker image rm wordpress;\
-docker run wordpress;\
-docker image ls;\
-docker ps;\
-
-### Estados de um contêiner
-
-docker container rm -f $(docker container ls -aq);\
-docker create --name word wordpress
-docker ps;\
-docker pause word
-docker ps;\
-docker unpause word;\
-docker stop word;\
-docker ps -a;\
-docker rm word;\
-docker ps -a;\
+docker run hello-world;\
 
 ### Iterativos vs Detach
 
-docker run --name word wordpress;\
+docker run --name word --rm wordpress;\
 ctrl+c
-docker run --name word -d wordpress\;
-docker rm -f word;\
-docker run --name word -it wordpress /bin/sh;\
-exit
+docker run --rm --name word -d wordpress\;
 docker rm -f word;\
 
 ### Repositórios Alternativos
 
-docker container rm -f $(docker container ls -aq) ; docker image rm $(docker image ls -q);\
 docker pull quay.io/dockerinaction/ch3_hello_registry:latest
 
 ### Exec, Entrypoints, Variáveis de Ambiente e Tolerância à falha
@@ -58,7 +37,9 @@ docker run --name word --entrypoint echo wordpress "Hello World"
 docker rm -f word
 docker run --name word --env MY_VAR=opus_software -it wordpress /bin/sh;\
 echo $MY_VAR;\
-docker run --name word --restart always wordpress
+docker run --name word --restart always -it wordpress /bin/sh
+exit\
+docker ps\
 
 ### logs e inspect
 
@@ -73,8 +54,7 @@ docker inspect word | grep AUTHOR
 
 ### Bind Mounts
 
-docker run --mount type=bind,src=$PWD/volumes/bind,dst=/home -it ;\
-mysql /bin/sh;\
+docker run --mount type=bind,src=$PWD/volumes/bind,dst=/home -it mysql /bin/sh;\
 cd /home;\
 ls;\
 \# cria outro terminal \
@@ -105,7 +85,7 @@ cd /home;\
 touch opus.txt;\
 ls;\ \# no outro terminal
 
-### Herança de Volumes
+### Herança de Volumes e volumes anonimos
 
 docker volume create my-volume2;\
 docker volume create my-volume3;\
@@ -113,19 +93,15 @@ docker create --mount type=volume,src=my-volume1,dst=/home --mount type=volume,s
 docker create --mount type=volume,src=my-volume3,dst=/opt --name my-container2 mysql;\
 docker create --volumes-from my-container1 --volumes-from my-container2 --name my-container3 mysql;\
 docker inspect my-container3 | less;\
-
-### Volumes anonônimos
-
-docker create --mount type=volume,dst=/home --name word wordpress;\
-docker volume ls;\
-docker inspect word | less;
+Mostrar volume anonimo do mysql\
+docker volume ls\
 
 ## Redes Docker
 
 ### Redes Host e Nobody
 
 docker network ls
-docker run --name nettools --network network1 -d --rm praqma/network-multitool;\
+docker run --name nettools --network none -d --rm praqma/network-multitool;\
 docker exec -it nettools /bin/sh;\
 ifconfig
 exit
@@ -168,19 +144,19 @@ docker run --name nettools -p 9000:9000/tcp -d --rm praqma/network-multitool;\
 docker exec -it nettools /bin/sh;\
 \# Abre outro terminal
 sudo wireshark;\
-\# escolher any e tcp.port = 12000
-\# Volta pro primeiro terminal
+\# escolher any e tcp.port = 12000\
+\# Volta pro primeiro terminal\
 nc -vlkp 9000
-\# Volta pro segundo terminal
+\# Volta pro segundo terminal\
 nc -v localhost 9000
 
 ## Controle de Recursos
 
 ### Memória
 
-docker run -it --name forkbomb python /bin/sh;\
+docker run -it --name forkbomb --memory=2G python /bin/sh;\
 \# Segundo terminal \
-docker cp fork-bomb.py forkbomb;\
+docker cp fork-bomb.py forkbomb:/;\
 docker rm -f forkbomb; \# apenas preparar \
 \# Terceiro terminal \
 docker stats forkbomb \
@@ -211,29 +187,16 @@ docker run --name=webcam -d -p 8080:8080 -p 8082:8082 --device /dev/video0:/dev/
 vim ipc.c
 \# Rodar sem ipc no segundo container
 
-docker container run -d -u nobody --name producer \
---ipc shareable \
-dockerinaction/ch6_ipc -producer;\
-docker container run -d -u nobody --name consumer \
-dockerinaction/ch6_ipc -consumer;\
+docker container run -d --name producer --ipc shareable dockerinaction/ch6_ipc -producer;\
+docker container run -d --name consumer --ipc container:producer dockerinaction/ch6_ipc -consumer;\
 
-\# mostrar os logs
-docker logs producer;\
-docker logs consumer;\
-
-\# Rodar com o ipc no segundo container
-docker container rm -v consumer;\
-docker container run -d --name consumer \
---ipc container:producer \
-dockerinaction/ch6_ipc -consumer;\
+docker logs producer\
+docker logs consumerc
 
 ### Operações do Kernel
 
-docker run --name word -it wordpressl /bin/sh;\
-touch a.txt;\
-chown nobody a.txt;\
 docker run --name word -it --cap-drop chown wordpress /bin/sh;\
-touch a.txt
+touch a.txt\
 chown nobody a.txt;\
 
 ## Criação de Imagem
@@ -243,7 +206,7 @@ chown nobody a.txt;\
 docker run --name word -it wordpress /bin/sh;\
 cd /etc;\
 rm magic.mime;\
-echo hosts;\
+echo a >> hosts;\
 touch a.txt;\
 exit;\
 docker diff word;\
